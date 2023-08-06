@@ -2,6 +2,18 @@
 # yarn lockfile v1
 
 
+"@clickhouse/client-common@0.2.0":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@clickhouse/client-common/-/client-common-0.2.0.tgz#0c0c78d29d4a86c5bfa359fc5d4fb46f7a1b79e1"
+  integrity sha512-mRfKRJ4MgBP9urA4IQYYSvXvNufrl6XNvzJiQfmSXr1j7KyqE8hTC+NRIwPpzs4drdvaEAciHRsd1g56+gFuww==
+
+"@clickhouse/client@^0.2.0":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@clickhouse/client/-/client-0.2.0.tgz#81ed8c1148ad7f6d812d2eb95ea217c44699eeea"
+  integrity sha512-lJ3fZvJUE8opIuGvaMPT7Ot65HjZ56eaA+2EjvSeNPDXHMxSf1IXhErW6EFkJQHImNKpOlhELDJH6bwPpWsAJQ==
+  dependencies:
+    "@clickhouse/client-common" "0.2.0"
+
 "@cspotcode/source-map-support@^0.8.0":
   version "0.8.1"
   resolved "https://registry.yarnpkg.com/@cspotcode/source-map-support/-/source-map-support-0.8.1.tgz#00629c35a688e05a88b1cda684fb9d5e73f000a1"
@@ -987,6 +999,11 @@ postgres@^3.3.1:
   version "3.3.2"
   resolved "https://registry.yarnpkg.com/postgres/-/postgres-3.3.2.tgz#91f2e209e4a08ca7101eb7178734e4c0e4d23eb3"
   integrity sha512-NaPqFpUC6C7aCQkJXLvuO/3RKNKL4en8opY53YrcXK3//xXra6CZ2qX6290lxuQ1dW1LbRGYCmsawRlCxSBonQ==
+
+prettier@^3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/prettier/-/prettier-3.0.1.tgz#65271fc9320ce4913c57747a70ce635b30beaa40"
+  integrity sha512-fcOWSnnpCrovBsmFZIGIy9UqK2FaI7Hqax+DIO0A9UxeVoY4iweyaFjS5TavZN97Hfehph0nhsZnjlVKzEQSrQ==
 
 promise.allsettled@^1.0.5:
   version "1.0.6"

@@ -1,9 +1,11 @@
-import { queryAllium } from "../../helpers/allium";
-import { convertChainToFlipside, isAcceptedChain } from "./convertChain";
-import { ChainAddresses, ProtocolAddresses } from "./types";
+import { queryAllium } from "../../helpers/allium"
+import { convertChainToFlipside, isAcceptedChain } from "./convertChain"
+import { ChainAddresses, ProtocolAddresses } from "./types"
 
-export async function countNewUsers(addresses: ChainAddresses, start:number, end:number) {
-    const chainAddresses = Object.entries(addresses).filter(([chain])=>isAcceptedChain(chain)).reduce((all, c)=>all.concat(c[1]), [] as string[])
+export async function countNewUsers(addresses: ChainAddresses, start: number, end: number) {
+    const chainAddresses = Object.entries(addresses)
+        .filter(([chain]) => isAcceptedChain(chain))
+        .reduce((all, c) => all.concat(c[1]), [] as string[])
     const query = await queryAllium(`
 WITH
   all_new_users AS (
@@ -77,7 +79,7 @@ WITH
           avalanche.raw.transactions
       ) t
     WHERE
-      t.to_address IN (${chainAddresses.map(a => `'${a.toLowerCase()}'`).join(',')})
+      t.to_address IN (${chainAddresses.map((a) => `'${a.toLowerCase()}'`).join(",")})
   )
 SELECT
   COUNT(*) as user_count
@@ -89,20 +91,22 @@ WHERE
     return query[0].user_count
 }
 
-function gasPrice(chain:string){
-  if(["avax", "optimism"].includes(chain)){
-    return "gas_price"
-  }
-  return "receipt_effective_gas_price"
+function gasPrice(chain: string) {
+    if (["avax", "optimism"].includes(chain)) {
+        return "gas_price"
+    }
+    return "receipt_effective_gas_price"
 }
 
 export function countUsers(addresses: ChainAddresses) {
     return async (start: number, end: number) => {
-        const chainArray = Object.entries(addresses).filter(([chain])=>isAcceptedChain(chain))
+        const chainArray = Object.entries(addresses).filter(([chain]) => isAcceptedChain(chain))
         const query = await queryAllium(`
 WITH
-  ${chainArray.map(([chain, chainAddresses])=>
-    `${chain} AS (
+  ${chainArray
+      .map(
+          ([chain, chainAddresses]) =>
+              `${chain} AS (
         SELECT
             FROM_ADDRESS,
             HASH,
@@ -110,9 +114,11 @@ WITH
         FROM
             ${convertChainToFlipside(chain)}.raw.transactions
         WHERE
-            ${chainAddresses.length>1?
-                `TO_ADDRESS in (${chainAddresses.map(a=>`'${a.toLowerCase()}'`).join(',')})`:
-                `TO_ADDRESS = '${chainAddresses[0].toLowerCase()}'`}
+            ${
+                chainAddresses.length > 1
+                    ? `TO_ADDRESS in (${chainAddresses.map((a) => `'${a.toLowerCase()}'`).join(",")})`
+                    : `TO_ADDRESS = '${chainAddresses[0].toLowerCase()}'`
+            }
             AND BLOCK_TIMESTAMP > TO_TIMESTAMP_NTZ(${start})
             AND BLOCK_TIMESTAMP < TO_TIMESTAMP_NTZ(${end})
         ),
@@ -128,18 +134,28 @@ WITH
               FROM_ADDRESS
             FROM
             ${chain}
-          ), -- unique users`).join(',\n')},
+          ), -- unique users`,
+      )
+      .join(",\n")},
 both AS (
-    ${chainArray.map(([chain])=>`SELECT
+    ${chainArray
+        .map(
+            ([chain]) => `SELECT
     FROM_ADDRESS
 FROM
-    ${chain}`).join("\nUNION ALL\n")}),
-${chainArray.map(([chain])=>`${chain}_count AS (
+    ${chain}`,
+        )
+        .join("\nUNION ALL\n")}),
+${chainArray
+    .map(
+        ([chain]) => `${chain}_count AS (
     SELECT
     COUNT(FROM_ADDRESS) AS ${chain}_count_col
     FROM
     ${chain}_unique
-)`).join(',\n')},
+)`,
+    )
+    .join(",\n")},
 both_count AS (
     SELECT
     COUNT(DISTINCT FROM_ADDRESS) AS both_count
@@ -147,24 +163,31 @@ both_count AS (
     both
 )
 SELECT
-${chainArray.map(([chain])=>`${chain}_count_col, ${chain}_tx_count, ${chain}_total_gas`).join(', ')},
+${chainArray.map(([chain]) => `${chain}_count_col, ${chain}_tx_count, ${chain}_total_gas`).join(", ")},
 both_count
 FROM
 both_count CROSS JOIN
-${chainArray.map(([chain])=>`${chain}_total CROSS JOIN ${chain}_count`).join(' CROSS JOIN ')}`
+${chainArray.map(([chain]) => `${chain}_total CROSS JOIN ${chain}_count`).join(" CROSS JOIN ")}`)
+        const finalNumbers = Object.fromEntries(
+            chainArray.map(([name]) => [
+                name,
+                {
+                    users: query[0][`${name}_count_col`],
+                    txs: query[0][`${name}_tx_count`],
+                    gas: query[0][`${name}_total_gas`] ?? 0,
+                },
+            ]),
         )
-        const finalNumbers = Object.fromEntries((chainArray).map(([name])=>[name, {
-            users: query[0][`${name}_count_col`],
-            txs: query[0][`${name}_tx_count`],
-            gas: query[0][`${name}_total_gas`]??0,
-        }]))
         finalNumbers.all = {
-            users:query[0].both_count
+            users: query[0].both_count,
         } as any
         return finalNumbers
     }
 }
 
-export const isAddressesUsable = (addresses:ProtocolAddresses)=>{
-    return addresses.addresses.bsc === undefined && Object.entries(addresses.addresses).some(([chain, addys])=> isAcceptedChain(chain) && addys && addys.length>0)
+export const isAddressesUsable = (addresses: ProtocolAddresses) => {
+    return (
+        addresses.addresses.bsc === undefined &&
+        Object.entries(addresses.addresses).some(([chain, addys]) => isAcceptedChain(chain) && addys && addys.length > 0)
+    )
 }
